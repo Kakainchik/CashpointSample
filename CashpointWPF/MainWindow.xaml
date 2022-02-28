@@ -1,0 +1,111 @@
+﻿<Window x:Class="CashpointWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cus="clr-namespace:CashpointWPF.Controls"
+        xmlns:cvr="clr-namespace:CashpointWPF.Converters"
+        xmlns:local="clr-namespace:CashpointWPF"
+        mc:Ignorable="d"
+        Title="JYSK Sample"
+        MinHeight="450"
+        MinWidth="500"
+        Height="450"
+        Width="500">
+    <Window.Resources>
+        <cvr:ATMErrorConverter x:Key="ATMErrorCvr"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Border Margin="{StaticResource SmallMargin}"
+                BorderThickness="1"
+                BorderBrush="LightGray">
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="6*"/>
+                </Grid.RowDefinitions>
+
+                <TextBox x:Name="NewClientName"
+                         Height="35"
+                         Margin="{StaticResource AverageMargin}">
+                </TextBox>
+
+                <Button Grid.Column="1"
+                        Content="Create client"
+                        Margin="{StaticResource AverageMargin}"
+                        Command="{Binding CreateClientCommand}"
+                        CommandParameter="{Binding ElementName=NewClientName, Path=Text}"/>
+                
+                <!-- Clients List -->
+                <ListBox Grid.Row="1"
+                         Grid.ColumnSpan="2"
+                         ItemsSource="{Binding Clients}"
+                         SelectedItem="{Binding SelectedClient, Mode=OneWayToSource}"
+                         SelectedIndex="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Path=Name}"
+                                           FontSize="14"
+                                           FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Path=Account.Balance, StringFormat={}Amount: {0}PLN}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Column="1"
+                    Orientation="Vertical"
+                    VerticalAlignment="Center"
+                    Margin="{StaticResource SmallMargin}">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Stretch">
+                <TextBox Width="60"
+                         MaxLength="6"
+                         Margin="{StaticResource SmallMargin}"
+                         Text="{Binding WithdrawText, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Content="Withdraw"
+                        Margin="{StaticResource SmallMargin}"
+                        Command="{Binding WithdrawCommand}"
+                        IsEnabled="{Binding CanWithdraw}"/>
+            </StackPanel>
+
+            <TextBlock Margin="0,10,0,0"
+                       Text="{Binding MachineError, Converter={StaticResource ATMErrorCvr}}"
+                       Foreground="Red"
+                       FontWeight="Black"
+                       FontSize="10"
+                       TextWrapping="WrapWithOverflow"/>
+
+            <GroupBox Header="Remained banknotes"
+                      Margin="0,10,0,0">
+                <ItemsControl ItemsSource="{Binding BanknotesState, Mode=TwoWay}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <cus:BulletTextBox Header="{Binding Path=Key, StringFormat={}{0}PLN: }"
+                                               Body="{Binding Path=Value}"
+                                               Margin="{StaticResource AverageMargin}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </GroupBox>
+        </StackPanel>
+    </Grid>
+</Window>
