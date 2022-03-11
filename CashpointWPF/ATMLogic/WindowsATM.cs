@@ -18,8 +18,9 @@ namespace CashpointWPF.ATMLogic
                 throw new WithdrawException(ATMError.INVALID_INPUT,
                     "Amount cannnot be zero or less.");
             
+            Dictionary<int, int> copy = new Dictionary<int, int>(Cash);
             Dictionary<int, int> rest = new Dictionary<int, int>();
-            GoThroughBanknote(Cash, rest, amount);
+            GoThroughBanknote(copy, rest, amount);
 
             rest = rest.Where(kvp => kvp.Value != 0)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -43,7 +44,6 @@ namespace CashpointWPF.ATMLogic
             }
             else
             {
-                CancelWithdrawing(result);
                 throw new WithdrawException(ATMError.NO_BANKNOTES,
                     "Not possible to withdraw this amount.");
             }
@@ -64,6 +64,8 @@ namespace CashpointWPF.ATMLogic
             {
                 source[reqB.Key] -= reqB.Value;
                 result.Add(reqB.Key, reqB.Value);
+
+                ConfirmWithdrawing(result);
                 return;
             }
 
@@ -83,11 +85,11 @@ namespace CashpointWPF.ATMLogic
             GoThroughBanknote(source, result, remains);
         }
 
-        private void CancelWithdrawing(IDictionary<int, int> rest)
+        private void ConfirmWithdrawing(IDictionary<int, int> actual)
         {
-            foreach(var pair in rest)
+            foreach(var pair in actual)
             {
-                Cash[pair.Key] += pair.Value;
+                Cash[pair.Key] -= pair.Value;
             }
         }
     }
